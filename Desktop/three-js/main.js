@@ -23,7 +23,7 @@ scene.add( light );
 // scene.add( cube1 );
 
 camera.position.z = 5;
-camera.position.y = 1;
+camera.position.y = 0;
 
 function animate() {
 
