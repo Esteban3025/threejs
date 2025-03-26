@@ -1,72 +1,61 @@
 import * as THREE from 'three';
+const renderer = new THREE.WebGLRenderer();
 
-	import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-	import { KMZLoader } from 'three/addons/loaders/KMZLoader.js';
+renderer.setSize( window.innerWidth, window.innerHeight );
+document.body.appendChild( renderer.domElement );
 
-			let camera, scene, renderer;
+const fov = 75;
+const aspect = 2;  // the canvas default
+const near = 0.1;
+const far = 5;
+const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+camera.position.z = 2;
 
-			init();
+const scene = new THREE.Scene();
 
-			function init() {
+const boxWidth = 1;
+const boxHeight = 1;
+const boxDepth = 1;
+const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
 
-				scene = new THREE.Scene();
-				scene.background = new THREE.Color( 0x999999 );
+const color = 0xFFFFFF;
+const intensity = 3;
+const light = new THREE.DirectionalLight(color, intensity);
+light.position.set(-1, 2, 4);
+scene.add(light);
 
-				const light = new THREE.DirectionalLight( 0xffffff, 3 );
-				light.position.set( 0.5, 1.0, 0.5 );
+renderer.render(scene, camera);
 
-				scene.add( light );
 
-				camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 1, 500 );
+function makeInstance(geometry, color, x) {
+	const material = new THREE.MeshPhongMaterial({color});
+	const cube = new THREE.Mesh(geometry, material);
+	scene.add(cube);
 
-				camera.position.y = 5;
-				camera.position.z = 10;
+	cube.position.x = x;
 
-				scene.add( camera );
+	return cube;
+}
 
-				const grid = new THREE.GridHelper( 6, 6, 0xffffff, 0x7b7b7b );
-				scene.add( grid );
+const cubes = [
+	makeInstance(geometry, 0x44aa88,  0),
+	makeInstance(geometry, 0x8844aa, -2),
+	makeInstance(geometry, 0xaa8844,  2),
+];
 
-				const geometry = new THREE.BoxGeometry( 1, 1, 1 ); 
-				const material = new THREE.MeshBasicMaterial( {color: 0x00ff00} ); 
-				const cube = new THREE.Mesh( geometry, material ); 
-				scene.add( cube );
+function render(time) {
+	time *= 0.001;
 
-				renderer = new THREE.WebGLRenderer( { antialias: true } );
-				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				document.body.appendChild( renderer.domElement );
+	cubes.forEach((cube, ndx) => {
+		const speed = 1 + ndx * .1;
+		const rot = time * speed;
+		cube.rotation.x = rot;
+		cube.rotation.y = rot;
+	});
 
-				const loader = new KMZLoader();
-				loader.load( './models/kmz/Box.kmz', function ( kmz ) {
+	renderer.render(scene, camera);
 
-					kmz.scene.position.y = 0.5;
-					scene.add( kmz.scene );
-					render();
+	requestAnimationFrame(render);
+}
 
-				} );
-
-				const controls = new OrbitControls( camera, renderer.domElement );
-				controls.addEventListener( 'change', render );
-				controls.update();
-
-				window.addEventListener( 'resize', onWindowResize );
-
-			}
-
-			function onWindowResize() {
-
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
-
-				renderer.setSize( window.innerWidth, window.innerHeight );
-
-				render();
-
-			}
-
-			function render() {
-
-				renderer.render( scene, camera );
-
-			}
+requestAnimationFrame(render);
