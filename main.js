@@ -27,7 +27,7 @@ const planeSize = 40;
 
 // Texture loader
 const loader = new THREE.TextureLoader();
-const texture = loader.load('./img/checker.png');
+const texture = loader.load('./img/groundTexture.png');
 texture.wrapS = THREE.RepeatWrapping;
 texture.wrapT = THREE.RepeatWrapping;
 texture.magFilter = THREE.NearestFilter;
