@@ -1,9 +1,13 @@
 import * as THREE from 'three';
+const loadingElem = document.querySelector('#loading');
+const progressBarElem = loadingElem.querySelector('.progressbar');
+
 const renderer = new THREE.WebGLRenderer();
 
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
+// Camara
 const fov = 75;
 const aspect = 2;  // the canvas default
 const near = 0.1;
@@ -12,52 +16,45 @@ const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 camera.position.z = 2;
 
 const scene = new THREE.Scene();
-
+// Geometria
 const boxWidth = 1;
 const boxHeight = 1;
 const boxDepth = 1;
 const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
 
+// Luz
 const color = 0xFFFFFF;
 const intensity = 3;
 const light = new THREE.DirectionalLight(color, intensity);
 light.position.set(-1, 2, 4);
 scene.add(light);
 
-const loader = new THREE.TextureLoader();
+const loadManager = new THREE.LoadingManager();
+const loader = new THREE.TextureLoader(loadManager);
+const texture = loader.load('https://threejs.org/manual/examples/resources/images/flower-1.jpg');
+const xOffset = .1;   // offset by half the texture
+const yOffset = .25;  // offset by 1/4 the texture
+texture.offset.set(xOffset, yOffset);
 
 renderer.render(scene, camera);
 
+	const material = new THREE.MeshPhongMaterial({
+	map: texture,
+  	});
 
-function makeInstance(geometry, x) {
-	const materials = [
-		new THREE.MeshPhongMaterial({map: loadColorTexture('https://threejs.org/manual/examples/resources/images/flower-1.jpg')}),
-		new THREE.MeshPhongMaterial({map: loadColorTexture('https://threejs.org/manual/examples/resources/images/flower-2.jpg')}),
-		new THREE.MeshPhongMaterial({map: loadColorTexture('https://threejs.org/manual/examples/resources/images/flower-3.jpg')}),
-		new THREE.MeshPhongMaterial({map: loadColorTexture('https://threejs.org/manual/examples/resources/images/flower-4.jpg')}),
-		new THREE.MeshPhongMaterial({map: loadColorTexture('https://threejs.org/manual/examples/resources/images/flower-5.jpg')}),
-		new THREE.MeshPhongMaterial({map: loadColorTexture('https://threejs.org/manual/examples/resources/images/flower-6.jpg')}),
-	];
-	const cube = new THREE.Mesh(geometry, materials);
+	loadManager.onLoad = () => {
+		loadingElem.style.display = 'none';
+		const cube = new THREE.Mesh(geometry, material);
+		scene.add(cube);
+		cubes.push(cube);  // add to our list of cubes to rotate
+	};
 
-	function loadColorTexture( path ) {
-		const texture = loader.load( path );
-		texture.colorSpace = THREE.SRGBColorSpace;
-		return texture;
-	}
+	loadManager.onProgress = (urlOfLastItemLoaded, itemsLoaded, itemsTotal) => {
+		const progress = itemsLoaded / itemsTotal;
+		progressBarElem.style.transform = `scaleX(${progress})`;
+	  };
 
-	scene.add(cube);
-
-	cube.position.x = x;
-
-	return cube;
-}
-
-const cubes = [
-	makeInstance(geometry,  0),
-	makeInstance(geometry, -2),
-	makeInstance(geometry,  2),
-];
+	const cubes = [];
 
 function render(time) {
 	time *= 0.001;
