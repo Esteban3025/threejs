@@ -24,12 +24,28 @@ const light = new THREE.DirectionalLight(color, intensity);
 light.position.set(-1, 2, 4);
 scene.add(light);
 
+const loader = new THREE.TextureLoader();
+
 renderer.render(scene, camera);
 
 
-function makeInstance(geometry, color, x) {
-	const material = new THREE.MeshPhongMaterial({color});
-	const cube = new THREE.Mesh(geometry, material);
+function makeInstance(geometry, x) {
+	const materials = [
+		new THREE.MeshPhongMaterial({map: loadColorTexture('https://threejs.org/manual/examples/resources/images/flower-1.jpg')}),
+		new THREE.MeshPhongMaterial({map: loadColorTexture('https://threejs.org/manual/examples/resources/images/flower-2.jpg')}),
+		new THREE.MeshPhongMaterial({map: loadColorTexture('https://threejs.org/manual/examples/resources/images/flower-3.jpg')}),
+		new THREE.MeshPhongMaterial({map: loadColorTexture('https://threejs.org/manual/examples/resources/images/flower-4.jpg')}),
+		new THREE.MeshPhongMaterial({map: loadColorTexture('https://threejs.org/manual/examples/resources/images/flower-5.jpg')}),
+		new THREE.MeshPhongMaterial({map: loadColorTexture('https://threejs.org/manual/examples/resources/images/flower-6.jpg')}),
+	];
+	const cube = new THREE.Mesh(geometry, materials);
+
+	function loadColorTexture( path ) {
+		const texture = loader.load( path );
+		texture.colorSpace = THREE.SRGBColorSpace;
+		return texture;
+	}
+
 	scene.add(cube);
 
 	cube.position.x = x;
@@ -38,9 +54,9 @@ function makeInstance(geometry, color, x) {
 }
 
 const cubes = [
-	makeInstance(geometry, 0x44aa88,  0),
-	makeInstance(geometry, 0x8844aa, -2),
-	makeInstance(geometry, 0xaa8844,  2),
+	makeInstance(geometry,  0),
+	makeInstance(geometry, -2),
+	makeInstance(geometry,  2),
 ];
 
 function render(time) {
